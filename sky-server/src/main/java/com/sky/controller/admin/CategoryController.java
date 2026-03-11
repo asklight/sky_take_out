@@ -2,6 +2,7 @@ package com.sky.controller.admin;
 
 import com.sky.dto.CategoryDTO;
 import com.sky.dto.CategoryPageQueryDTO;
+import com.sky.entity.Category;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.CategoryService;
@@ -9,6 +10,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Api(tags = "分类管理相关接口")
 @RestController
@@ -76,6 +79,17 @@ public class CategoryController {
     public Result startOrStop(@PathVariable Integer status, Long id){
         categoryService.startOrStop(status, id);
         return Result.success();
+    }
+
+    /**
+     * 查询外卖分类列表
+     * @return
+     */
+    @ApiOperation("查询外卖分类列表")
+    @GetMapping("/list")
+    public Result<List<Category>> list(Integer type){
+         List<Category> list = categoryService.list(type);
+         return Result.success(list);
     }
 
 }
