@@ -4,3 +4,11 @@
 *.class
 *Test.java
 **/test/
+
+# 忽略阿里云配置/环境配置
+sky-server/src/main/resources/application-dev.yml
+sky-server/src/main/resources/application-*.yml
+# 忽略密钥文件
+*.pem
+*.key
+.env
