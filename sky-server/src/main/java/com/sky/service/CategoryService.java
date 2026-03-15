@@ -13,7 +13,7 @@ public interface CategoryService {
      * 新增外卖分类
      * @param categoryDTO
      */
-    public void save(CategoryDTO categoryDTO);
+    void save(CategoryDTO categoryDTO);
 
     /**
      * 分页查询外卖分类信息
@@ -43,6 +43,7 @@ public interface CategoryService {
 
     /**
      * 查询外卖分类列表
+     * 用户端使用
      * @return
      */
     List<Category> list(Integer type);
