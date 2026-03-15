@@ -131,6 +131,11 @@ public class DishServiceImpl implements DishService {
         return dishVO;
     }
 
+    /**
+     * 修改菜品信息
+     *
+     * @param dishDTO
+     */
     @Override
     public void updateWithFlavor(DishDTO dishDTO) {
         Dish dish = new Dish();
@@ -149,10 +154,30 @@ public class DishServiceImpl implements DishService {
         }
     }
 
+    /**
+     * 启用或禁用菜品
+     *
+     * @param status
+     * @param id
+     */
     @Override
     public void startOrStop(Integer status, Long id) {
         Dish dish = dishMapper.getById(id);
         dish.setStatus(status);
         dishMapper.update(dish);
+    }
+
+    /**
+     * 根据分类id查询菜品信息
+     *
+     * @param dishDTO
+     * @return
+     */
+    @Override
+    public List<Dish> list(DishDTO dishDTO) {
+        Dish dish = new Dish();
+        BeanUtils.copyProperties(dishDTO, dish);
+        List<Dish> dishList = dishMapper.list(dish);
+        return dishList;
     }
 }
