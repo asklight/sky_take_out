@@ -11,9 +11,11 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * 菜品管理相关接口
@@ -26,6 +28,8 @@ public class DishController {
 
     @Autowired
     private DishService dishService;
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     /**
      * 新增菜品
@@ -36,6 +40,11 @@ public class DishController {
     @PostMapping
     public Result save(@RequestBody DishDTO dishDTO){
         dishService.saveWithFlavor(dishDTO);
+
+        //新增菜品后，涉及到菜品列表的缓存失效，所以可以在这里进行相关的缓存清理操作，例如删除对应分类的菜品列表缓存。
+        String key = "dish_" + dishDTO.getCategoryId();
+        cleanCache(key);
+
         return Result.success();
     }
 
@@ -61,6 +70,16 @@ public class DishController {
     public Result delete(@RequestParam List<Long> ids){
         log.info("批量删除菜品，ids：{}", ids);
         dishService.deleteBatch(ids);
+
+        //批量删除菜品后，涉及到菜品列表的缓存失效，所以可以在这里进行相关的缓存清理操作，例如删除对应分类的菜品列表缓存。
+//        ids.forEach(id -> {
+//            //查询菜品信息，获取分类id
+//            DishVO dish = dishService.getByIdWithFlavor(id);
+//            String key = "dish_" + dish.getCategoryId();
+//            redisTemplate.delete(key);
+//        });
+        //为了简化操作，可以直接清理所有菜品列表的缓存，或者根据实际情况选择性清理相关分类的菜品列表缓存。
+        cleanCache("dish_*");
         return Result.success();
     }
 
@@ -88,6 +107,10 @@ public class DishController {
     public Result update(@RequestBody DishDTO dishDTO){
         log.info("修改菜品信息，dishDTO：{}", dishDTO);
         dishService.updateWithFlavor(dishDTO);
+
+        //修改菜品后，涉及到菜品列表的缓存失效，所以可以在这里进行相关的缓存清理操作，例如删除对应分类的菜品列表缓存。
+        cleanCache("dish_*");
+
         return Result.success();
     }
 
@@ -102,12 +125,15 @@ public class DishController {
     public Result startOrStop(@PathVariable Integer status, Long id){
         log.info("启用或禁用菜品，status：{}，ids：{}", status, id);
         dishService.startOrStop(status, id);
+
+        //启用或禁用菜品后，涉及到菜品列表的缓存失效，所以可以在这里进行相关的缓存清理操作，例如删除对应分类的菜品列表缓存。
+        cleanCache("dish_*");
         return Result.success();
     }
 
     /**
      * 根据分类id查询菜品信息
-     * @param categoryId
+     * @param dishDTO
      * @return
      */
     @ApiOperation(value = "根据分类id查询菜品信息")
@@ -118,4 +144,12 @@ public class DishController {
         return Result.success(dishList);
     }
 
+    /**
+     * 清理缓存的工具方法
+     * @param pattern
+     */
+    private void cleanCache(String pattern) {
+        Set keys = redisTemplate.keys(pattern);
+        redisTemplate.delete(keys);
+    }
 }
